@@ -31,6 +31,8 @@ function Contacts() {
   const [isViewData, setViewData] = useState({});
   const [isEditData, setEditData] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [count, setcount] = useState(0);
+  const [AllData, setAllData] = useState([]);
 
   const ViewClicked = (info) => {
     setViewData(info);
@@ -40,22 +42,23 @@ function Contacts() {
   const DeleteClicked = (info) => {
     const filteredData = isData.filter((item) => item.id !== info.id);
     setData(filteredData);
+    setAllData(filteredData);
     setView(false);
     setEdit(false);
   };
 
   const EditClicked = (info) => {
-    console.log(info);
     window.localStorage.setItem("editcontactid", info.id);
     setView(false);
     setAdd(false);
     setEdit(true);
     setEditData(info);
   };
-  const [count, setcount] = useState(0);
-  const [AllData, setAllData] = useState([]);
 
   const handleSearchChange = (event) => {
+    setView(false);
+    setEdit(false);
+    setAdd(false);
     setcount(count + 1);
     if (count === 0) {
       setAllData(isData);
@@ -65,15 +68,12 @@ function Contacts() {
         setSearchTerm("");
       } else {
         setSearchTerm(event.target.value);
-        console.log(event.target.value);
         const searchTerm = event.target.value;
         const filteredData = isData.filter((item) => {
           const lowerCasedName = item.name.toLowerCase();
           const lowerCasedSearchTerm = searchTerm.toLowerCase();
           return lowerCasedName.startsWith(lowerCasedSearchTerm);
         });
-
-        console.log(filteredData);
         setData(filteredData);
       }
     }
@@ -94,6 +94,7 @@ function Contacts() {
     setEdit(false);
     setAdd(true);
     setEdit(true);
+    setView(false);
     handleFormReset();
   };
 
@@ -125,10 +126,7 @@ function Contacts() {
     onSubmit: async (values) => {
       const id = parseInt(window.localStorage.getItem("editcontactid"));
       if (id != 0) {
-        console.log("edit");
-        console.log(localStorage.getItem("editcontactid"));
         const id = parseInt(localStorage.getItem("editcontactid"));
-        console.log(values);
         const newData = isData.map((item) => {
           if (item.id === id) {
             return {
@@ -143,10 +141,8 @@ function Contacts() {
         });
 
         setData(newData);
+        setAllData(newData);
       } else if (id === 0) {
-        console.log("add");
-        console.log(isData.length);
-        console.log(values);
         const newcontact = {
           id: isData.length + 1,
           name: values.name,
@@ -157,8 +153,9 @@ function Contacts() {
         setData((previous) => {
           return [...previous, newcontact];
         });
-      } else {
-        console.log("nothing is there to do");
+        setAllData((previous) => {
+          return [...previous, newcontact];
+        });
       }
     },
   });
@@ -251,7 +248,10 @@ function Contacts() {
             {isView ? (
               <div class="card " style={{ backgroundColor: "#EFF8FF" }}>
                 <div class="card-header" style={{ backgroundColor: "white" }}>
-                  Contact Details
+                  <span style={{ fontSize: "20px", color: "#b4b4b4" }}>
+                    <b>Contact Details</b>
+                  </span>
+
                   <Tooltip title="Close">
                     <span style={{ float: "right" }}>
                       <CloseOutlinedIcon
@@ -278,7 +278,10 @@ function Contacts() {
                 {isEdit ? (
                   <div class="card ">
                     <div class="card-header">
-                      {isAdd ? "Add Contact" : "Edit Contact"}
+                      <span style={{ fontSize: "20px", color: "#b4b4b4" }}>
+                        <b>{isAdd ? "Add Contact" : "Edit Contact"}</b>
+                      </span>
+
                       <Tooltip title="Close">
                         <span style={{ float: "right" }}>
                           <CloseOutlinedIcon
@@ -316,7 +319,7 @@ function Contacts() {
                               name={"email"}
                               value={formik.values.email}
                               onChange={formik.handleChange}
-                              //   type={"email"}
+                              type={"email"}
                               className="form-control"
                               placeholder="Enter your email"
                             />
@@ -384,7 +387,7 @@ function Contacts() {
             )}
           </div>
         </div>
-        <div className="col-lg-4"></div>
+        {/* <div className="col-lg-4"></div> */}
       </div>
     </>
   );
